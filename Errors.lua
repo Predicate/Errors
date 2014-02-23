@@ -24,6 +24,16 @@ local function initFrames()
 	editbox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
 	editbox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
 	editbox:SetText("|cff00ff00No errors yet!|r")
+	editbox:SetHyperlinksEnabled(true)
+	editbox:SetScript("OnHyperlinkEnter", function(self, link)
+		GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+		GameTooltip:ClearLines()
+		local name, title, notes = GetAddOnInfo(link:match("^addon:(.*)$"))
+		GameTooltip:AddLine(title or name)
+		if notes then GameTooltip:AddLine(notes, 1, 1, 1, true) end
+		GameTooltip:Show()
+	end)
+	editbox:SetScript("OnHyperlinkLeave", function() GameTooltip:Hide() end)
 
 	f:SetScrollChild(editbox)
 	f:SetScript("OnVerticalScroll", function(self, offset)
@@ -87,16 +97,41 @@ local function updateButtons()
 	end
 end
 
+local function stackformat(s)
+	if s == "" then return s end
+	return s:gsub("([^\n]+): ([^\n]+)", function(location, str)
+		if location == "[C]" then
+			return "|cff0000ff"..location..":|r "..str
+		else
+			local file, line = location:match("^([^\n]+):(%d+)$")
+			if file:match("%[.*%]$") then
+				return "|cffff8080" ..file.."|r:"..line..": "..str
+			elseif file:find("^%.%.%.") then
+				return file..":"..line..": "..str
+			else
+				local name, filename = file:match([[^Interface\(.+)\(.-)$]])
+				local addon = name:match([[^AddOns\(.*)$]])
+				if addon then
+					name = (addon:find("^Blizzard_") and "|cff0080ff" or "|cffffff00") .. "|Haddon:"..addon.."|h["..addon.."]|h|r"
+				else
+					name = "|cff0080ff["..name.."]|r"
+				end
+				return name.." |cffff8000"..filename.."#"..line..":|r "..str
+			end
+		end
+	end)
+end
+
 local lastseen = 0
 function showErr(index)
 	local err = errs[index]
 	if err then
 		local t = {}
-		t[#t+1] = "|cffffff00[Event #".. index .." @ "..err.timestamp.."]|r "
+		t[#t+1] = "|cffa0a0a0[Event #".. index .." @ "..err.timestamp.."]|r "
 		t[#t+1] = errstrings[err.type]
-		t[#t+1] = err.msg
+		t[#t+1] = (err.type == "ERROR") and stackformat(err.msg) or err.msg
 		t[#t+1] = "\n|cffff0000Stack trace:|r"
-		t[#t+1] = err.stack
+		t[#t+1] = stackformat(err.stack)
 		t[#t+1] = "\n|cffff0000Locals:|r"
 		t[#t+1] = err.locals
 		editbox:SetText(table.concat(t,"\n"))
