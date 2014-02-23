@@ -144,7 +144,7 @@ function showErr(index)
 	end
 end
 
-dobj = DataRegistry:NewDataObject("Errors", {
+dobj = DataRegistry.NewDataObject("Errors", {
 	type = "data source",
 	text = "0",
 	icon = [[Interface/HELPFRAME/HelpIcon-ReportAbuse]],
