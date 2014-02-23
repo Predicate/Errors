@@ -1,5 +1,3 @@
-local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
-
 local f, editbox, buttons
 local current, showErr, dobj
 local errs = {}
@@ -146,7 +144,7 @@ function showErr(index)
 	end
 end
 
-dobj = ldb:NewDataObject("Errors", {
+dobj = DataRegistry:NewDataObject("Errors", {
 	type = "data source",
 	text = "0",
 	icon = [[Interface/HELPFRAME/HelpIcon-ReportAbuse]],
