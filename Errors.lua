@@ -1,5 +1,5 @@
 local f, editbox, buttons
-local current, showErr, dobj
+local current, showErr
 local errs = {}
 local function initFrames()
 	f = CreateFrame("ScrollFrame", nil, UIParent)
@@ -69,7 +69,6 @@ local function initFrames()
 	buttons.Next:SetScript("OnClick", function() showErr(current+1) end)
 	buttons.Last:SetScript("OnClick", function() showErr(#errs) end)
 
-	showErr(#errs)
 end
 
 
@@ -122,6 +121,22 @@ local function stackformat(s)
 end
 
 local lastseen = 0
+local dobj = DataRegistry.NewDataObject("Errors", {
+	type = "data source",
+	text = "0",
+	icon = [[Interface/HELPFRAME/HelpIcon-ReportAbuse]],
+	OnClick = function()
+		if not f then initFrames() end
+		if f:IsShown() then
+			if lastseen == #errs then current = nil end
+			f:Hide()
+		else
+			f:Show()
+			showErr(current or lastseen+1)
+		end
+	end,
+})
+
 function showErr(index)
 	local err = errs[index]
 	if err then
@@ -145,19 +160,6 @@ function showErr(index)
 	end
 end
 
-dobj = DataRegistry.NewDataObject("Errors", {
-	type = "data source",
-	text = "0",
-	icon = [[Interface/HELPFRAME/HelpIcon-ReportAbuse]],
-	OnClick = function()
-		if not f then initFrames() end
-		if f:IsShown() then
-			f:Hide()
-		else
-			f:Show()
-		end
-	end,
-})
 
 local function newErr(type, msg, stack, locals)
 	errs[#errs+1] = {
@@ -169,12 +171,8 @@ local function newErr(type, msg, stack, locals)
 	}
 	dobj.icon = [[Interface/DialogFrame/UI-Dialog-Icon-AlertNew]]
 	dobj.text = #errs - lastseen .. "/" .. #errs
-	if f then
-		if current then
-			updateButtons()
-		else
-			showErr(#errs)
-		end
+	if f and current then
+		updateButtons()
 	end
 end
 
