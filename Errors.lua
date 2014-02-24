@@ -102,6 +102,7 @@ local function stackformat(s)
 			return "|cff0000ff"..location..":|r "..str
 		else
 			local file, line = location:match("^([^\n]+):(%d+)$")
+			if not file then return location..": "..str end
 			if file:match("%[.*%]$") then
 				return "|cffff8080" ..file.."|r:"..line..": "..str
 			elseif file:find("^%.%.%.") then
