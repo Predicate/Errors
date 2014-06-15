@@ -38,7 +38,7 @@ local function initFrames()
 		editbox:ClearAllPoints()
 		editbox:SetPoint("TOP", 0, offset)
 	end)
-	
+
 	buttons = {
 		First = CreateFrame("Button", nil, f),
 		Prev = CreateFrame("Button", nil, f),
@@ -132,7 +132,7 @@ local dobj = DataRegistry.NewDataObject("Errors", {
 			f:Hide()
 		else
 			f:Show()
-			showErr(current or lastseen+1)
+			showErr(current or math.min(lastseen+1, #errs))
 		end
 	end,
 })
